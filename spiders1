@@ -1,0 +1,33 @@
+import scrapy
+import re
+import codecs
+from scrapy.spiders import Spider
+from scrapy.selector import Selector
+from SCRAPY.items import NosdevoirsItem
+from scrapy.http.headers import Headers
+
+
+class NosdevoirsSpider(scrapy.Spider):
+    name = "devoirs"
+    allowed_domains = ["devoirs.fr"]
+    start_urls = []
+
+    def __init__(self):
+        f = open('urls_devoirs.txt')
+        for line in f.readlines():
+            self.start_urls.append(line)
+
+#    def start_requests(self):
+#        for url in self.start_urls:
+#            body = json.dumps({"url": url, "wait": 0.5})
+#            headers = Headers({'Content-Type': 'application/json'})
+#            yield scrapy.Request(RENDER_HTML_URL, self.parse, method="POST",
+#                                 body=body, headers=headers)
+
+
+    def parse(self, response):
+        for sel in response.xpath('//html/head'):
+            item = NosdevoirsItem()
+            item['link'] = response.xpath('//html/head/link[1]/@href').extract()
+            item['question'] = response.xpath('//div[@class="media"]/p|//div[@class="media"]/text()').extract()
+            yield item
